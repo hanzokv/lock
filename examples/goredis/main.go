@@ -3,7 +3,7 @@ package main
 import (
 	goredislib "github.com/go-redis/redis"
 	"github.com/hanzokv/lock/v4"
-	"github.com/hanzokv/lock/v4/redis/goredis"
+	"github.com/hanzokv/lock/v4/kv/goredis"
 	"github.com/stvp/tempredis"
 )
 

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/lock/v4/kv"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -327,7 +327,7 @@ func TestMutexLockUnlockSplit(t *testing.T) {
 	}
 }
 
-func getPoolValues(ctx context.Context, pools []redis.Pool, name string) []string {
+func getPoolValues(ctx context.Context, pools []kv.Pool, name string) []string {
 	values := make([]string, len(pools))
 	for i, pool := range pools {
 		conn, err := pool.Get(ctx)
@@ -344,7 +344,7 @@ func getPoolValues(ctx context.Context, pools []redis.Pool, name string) []strin
 	return values
 }
 
-func getPoolExpiries(pools []redis.Pool, name string) []int {
+func getPoolExpiries(pools []kv.Pool, name string) []int {
 	expiries := make([]int, len(pools))
 	for i, pool := range pools {
 		conn, err := pool.Get(context.TODO())
@@ -361,7 +361,7 @@ func getPoolExpiries(pools []redis.Pool, name string) []int {
 	return expiries
 }
 
-func clogPools(pools []redis.Pool, mask int, mutex *Mutex) int {
+func clogPools(pools []kv.Pool, mask int, mutex *Mutex) int {
 	n := 0
 	for i, pool := range pools {
 		if mask&(1<<uint(i)) == 0 {
@@ -381,7 +381,7 @@ func clogPools(pools []redis.Pool, mask int, mutex *Mutex) int {
 	return n
 }
 
-func newTestMutexes(pools []redis.Pool, name string, n int) []*Mutex {
+func newTestMutexes(pools []kv.Pool, name string, n int) []*Mutex {
 	mutexes := make([]*Mutex, n)
 	for i := range n {
 		mutexes[i] = &Mutex{
@@ -399,12 +399,12 @@ func newTestMutexes(pools []redis.Pool, name string, n int) []*Mutex {
 	return mutexes
 }
 
-func isAcquired(ctx context.Context, pools []redis.Pool, mutex *Mutex) bool {
+func isAcquired(ctx context.Context, pools []kv.Pool, mutex *Mutex) bool {
 	n := countAcquiredPools(ctx, pools, mutex)
 	return n >= mutex.quorum
 }
 
-func countAcquiredPools(ctx context.Context, pools []redis.Pool, mutex *Mutex) int {
+func countAcquiredPools(ctx context.Context, pools []kv.Pool, mutex *Mutex) int {
 	n := 0
 	values := getPoolValues(ctx, pools, mutex.name)
 	for _, value := range values {
@@ -415,7 +415,7 @@ func countAcquiredPools(ctx context.Context, pools []redis.Pool, mutex *Mutex) i
 	return n
 }
 
-func assertAcquired(ctx context.Context, t *testing.T, pools []redis.Pool, mutex *Mutex) {
+func assertAcquired(ctx context.Context, t *testing.T, pools []kv.Pool, mutex *Mutex) {
 	n := 0
 	values := getPoolValues(ctx, pools, mutex.name)
 	for _, value := range values {

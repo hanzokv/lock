@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	redsyncredis "github.com/hanzokv/lock/v4/redis"
+	redsynckv "github.com/hanzokv/lock/v4/kv"
 
 	"github.com/redis/rueidis"
 	"github.com/redis/rueidis/rueidiscompat"
@@ -15,7 +15,7 @@ type pool struct {
 	delegate rueidiscompat.Cmdable
 }
 
-func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
+func (p *pool) Get(ctx context.Context) (redsynckv.Conn, error) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -23,7 +23,7 @@ func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
 }
 
 // NewPool returns a rueidis-based pool implementation.
-func NewPool(delegate rueidiscompat.Cmdable) redsyncredis.Pool {
+func NewPool(delegate rueidiscompat.Cmdable) redsynckv.Pool {
 	return &pool{delegate}
 }
 
@@ -50,7 +50,7 @@ func (c *conn) PTTL(name string) (time.Duration, error) {
 	return c.delegate.PTTL(c.ctx, name).Result()
 }
 
-func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error) {
+func (c *conn) Eval(script *redsynckv.Script, keysAndArgs ...any) (any, error) {
 	keys := make([]string, script.KeyCount)
 	args := keysAndArgs
 
@@ -68,7 +68,7 @@ func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error
 	return v, noErrNil(err)
 }
 
-func (c *conn) ScriptLoad(script *redsyncredis.Script) error {
+func (c *conn) ScriptLoad(script *redsynckv.Script) error {
 	v, err := c.delegate.ScriptLoad(c.ctx, script.Src).Result()
 	if err == nil {
 		script.Hash = v

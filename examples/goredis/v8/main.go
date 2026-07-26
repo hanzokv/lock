@@ -5,7 +5,7 @@ import (
 
 	goredislib "github.com/go-redis/redis/v8"
 	"github.com/hanzokv/lock/v4"
-	"github.com/hanzokv/lock/v4/redis/goredis/v8"
+	"github.com/hanzokv/lock/v4/kv/goredis/v8"
 	"github.com/stvp/tempredis"
 )
 

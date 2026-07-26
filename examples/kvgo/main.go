@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
+	kvlib "github.com/hanzokv/go/v9"
 	"github.com/hanzokv/lock/v4"
-	"github.com/hanzokv/lock/v4/redis/goredis/v9"
-	goredislib "github.com/hanzokv/go/v9"
+	"github.com/hanzokv/lock/v4/kv/kvgo"
 	"github.com/stvp/tempredis"
 )
 
@@ -16,12 +16,12 @@ func main() {
 	}
 	defer server.Term()
 
-	client := goredislib.NewClient(&goredislib.Options{
+	client := kvlib.NewClient(&kvlib.Options{
 		Network: "unix",
 		Addr:    server.Socket(),
 	})
 
-	pool := goredis.NewPool(client)
+	pool := kvgo.NewPool(client)
 
 	rs := redsync.New(pool)
 

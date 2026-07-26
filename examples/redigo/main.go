@@ -3,9 +3,9 @@ package main
 import (
 	"time"
 
-	"github.com/hanzokv/lock/v4"
-	"github.com/hanzokv/lock/v4/redis/redigo"
 	redigolib "github.com/gomodule/redigo/redis"
+	"github.com/hanzokv/lock/v4"
+	"github.com/hanzokv/lock/v4/kv/redigo"
 	"github.com/stvp/tempredis"
 )
 

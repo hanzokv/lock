@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/lock/v4/kv"
 )
 
 // A DelayFunc is used to decide the amount of time to wait between retries.
@@ -33,10 +33,10 @@ type Mutex struct {
 	failFast      bool
 	setNXOnExtend bool
 
-	pools []redis.Pool
+	pools []kv.Pool
 }
 
-// Name returns mutex name (i.e. the Redis key).
+// Name returns mutex name (i.e. the KV key).
 func (m *Mutex) Name() string {
 	return m.name
 }
@@ -106,7 +106,7 @@ func (m *Mutex) lockContext(ctx context.Context, tries int) error {
 		n, err := func() (int, error) {
 			ctx, cancel := context.WithTimeout(ctx, time.Duration(int64(float64(m.expiry)*m.timeoutFactor)))
 			defer cancel()
-			return m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
+			return m.actOnPoolsAsync(func(pool kv.Pool) (bool, error) {
 				return m.acquire(ctx, pool, value)
 			})
 		}()
@@ -121,7 +121,7 @@ func (m *Mutex) lockContext(ctx context.Context, tries int) error {
 		_, _ = func() (int, error) {
 			ctx, cancel := context.WithTimeout(ctx, time.Duration(int64(float64(m.expiry)*m.timeoutFactor)))
 			defer cancel()
-			return m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
+			return m.actOnPoolsAsync(func(pool kv.Pool) (bool, error) {
 				return m.release(ctx, pool, value)
 			})
 		}()
@@ -140,7 +140,7 @@ func (m *Mutex) Unlock() (bool, error) {
 
 // UnlockContext unlocks m and returns the status of unlock.
 func (m *Mutex) UnlockContext(ctx context.Context) (bool, error) {
-	n, err := m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
+	n, err := m.actOnPoolsAsync(func(pool kv.Pool) (bool, error) {
 		return m.release(ctx, pool, m.value)
 	})
 	if n < m.quorum {
@@ -157,7 +157,7 @@ func (m *Mutex) Extend() (bool, error) {
 // ExtendContext resets the mutex's expiry and returns the status of expiry extension.
 func (m *Mutex) ExtendContext(ctx context.Context) (bool, error) {
 	start := time.Now()
-	n, err := m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
+	n, err := m.actOnPoolsAsync(func(pool kv.Pool) (bool, error) {
 		return m.touch(ctx, pool, m.value, int(m.expiry/time.Millisecond))
 	})
 	if n < m.quorum {
@@ -187,13 +187,13 @@ func (m *Mutex) Valid() (bool, error) {
 //
 // Deprecated: Use Until instead. See https://github.com/go-redsync/redsync/issues/72.
 func (m *Mutex) ValidContext(ctx context.Context) (bool, error) {
-	n, err := m.actOnPoolsAsync(func(pool redis.Pool) (bool, error) {
+	n, err := m.actOnPoolsAsync(func(pool kv.Pool) (bool, error) {
 		return m.valid(ctx, pool)
 	})
 	return n >= m.quorum, err
 }
 
-func (m *Mutex) valid(ctx context.Context, pool redis.Pool) (bool, error) {
+func (m *Mutex) valid(ctx context.Context, pool kv.Pool) (bool, error) {
 	if m.value == "" {
 		return false, nil
 	}
@@ -218,7 +218,7 @@ func genValue() (string, error) {
 	return base64.StdEncoding.EncodeToString(b), nil
 }
 
-func (m *Mutex) acquire(ctx context.Context, pool redis.Pool, value string) (bool, error) {
+func (m *Mutex) acquire(ctx context.Context, pool kv.Pool, value string) (bool, error) {
 	conn, err := pool.Get(ctx)
 	if err != nil {
 		return false, err
@@ -231,7 +231,7 @@ func (m *Mutex) acquire(ctx context.Context, pool redis.Pool, value string) (boo
 	return reply, nil
 }
 
-func (m *Mutex) release(ctx context.Context, pool redis.Pool, value string) (bool, error) {
+func (m *Mutex) release(ctx context.Context, pool kv.Pool, value string) (bool, error) {
 	conn, err := pool.Get(ctx)
 	if err != nil {
 		return false, err
@@ -247,7 +247,7 @@ func (m *Mutex) release(ctx context.Context, pool redis.Pool, value string) (boo
 	return status != int64(0), nil
 }
 
-func (m *Mutex) touch(ctx context.Context, pool redis.Pool, value string, expiry int) (bool, error) {
+func (m *Mutex) touch(ctx context.Context, pool kv.Pool, value string, expiry int) (bool, error) {
 	conn, err := pool.Get(ctx)
 	if err != nil {
 		return false, err
@@ -266,7 +266,7 @@ func (m *Mutex) touch(ctx context.Context, pool redis.Pool, value string, expiry
 	return status != int64(0), nil
 }
 
-func (m *Mutex) actOnPoolsAsync(actFn func(redis.Pool) (bool, error)) (int, error) {
+func (m *Mutex) actOnPoolsAsync(actFn func(kv.Pool) (bool, error)) (int, error) {
 	type result struct {
 		node     int
 		statusOK bool
@@ -275,7 +275,7 @@ func (m *Mutex) actOnPoolsAsync(actFn func(redis.Pool) (bool, error)) (int, erro
 
 	ch := make(chan result, len(m.pools))
 	for node, pool := range m.pools {
-		go func(node int, pool redis.Pool) {
+		go func(node int, pool kv.Pool) {
 			r := result{node: node}
 			r.statusOK, r.err = actFn(pool)
 			ch <- r
@@ -295,7 +295,7 @@ func (m *Mutex) actOnPoolsAsync(actFn func(redis.Pool) (bool, error)) (int, erro
 		} else if r.err == ErrLockAlreadyExpired {
 			err = errors.Join(err, ErrLockAlreadyExpired)
 		} else if r.err != nil {
-			err = errors.Join(err, &RedisError{Node: r.node, Err: r.err})
+			err = errors.Join(err, &KVError{Node: r.node, Err: r.err})
 		} else {
 			taken = append(taken, r.node)
 			err = errors.Join(err, &ErrNodeTaken{Node: r.node})

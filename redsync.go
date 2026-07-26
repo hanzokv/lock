@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/lock/v4/kv"
 )
 
 const (
@@ -13,13 +13,13 @@ const (
 	maxRetryDelayMilliSec = 250
 )
 
-// Redsync provides a simple method for creating distributed mutexes using multiple Redis connection pools.
+// Redsync provides a simple method for creating distributed mutexes using multiple KV connection pools.
 type Redsync struct {
-	pools []redis.Pool
+	pools []kv.Pool
 }
 
-// New creates and returns a new Redsync instance from given Redis connection pools.
-func New(pools ...redis.Pool) *Redsync {
+// New creates and returns a new Redsync instance from given KV connection pools.
+func New(pools ...kv.Pool) *Redsync {
 	return &Redsync{
 		pools: pools,
 	}
@@ -91,8 +91,8 @@ func WithRetryDelay(delay time.Duration) Option {
 }
 
 // WithSetNXOnExtend improves extending logic to extend the key if exist
-// and if not, tries to set a new key in redis
-// Useful if your redises restart often and you want to reduce the chances of losing the lock
+// and if not, tries to set a new key in the KV store
+// Useful if your KV nodes restart often and you want to reduce the chances of losing the lock
 // Read this MR for more info: https://github.com/go-redsync/redsync/pull/149
 func WithSetNXOnExtend() Option {
 	return OptionFunc(func(m *Mutex) {
@@ -139,24 +139,24 @@ func WithValue(v string) Option {
 }
 
 // WithFailFast can be used to quickly acquire and release the lock.
-// When some Redis servers are blocking, we do not need to wait for responses from all the Redis servers response.
+// When some KV servers are blocking, we do not need to wait for responses from all the KV servers response.
 // As long as the quorum is met, we can assume the lock is acquired. The effect of this parameter is to achieve low
-// latency, avoid Redis blocking causing Lock/Unlock to not return for a long time.
+// latency, avoid KV blocking causing Lock/Unlock to not return for a long time.
 func WithFailFast(b bool) Option {
 	return OptionFunc(func(m *Mutex) {
 		m.failFast = b
 	})
 }
 
-// WithShufflePools can be used to shuffle Redis pools to reduce centralized access in concurrent scenarios.
+// WithShufflePools can be used to shuffle KV pools to reduce centralized access in concurrent scenarios.
 func WithShufflePools(b bool) Option {
 	return OptionFunc(func(m *Mutex) {
 		m.shuffle = b
 	})
 }
 
-// randomPools shuffles Redis pools.
-func randomPools(pools []redis.Pool) {
+// randomPools shuffles KV pools.
+func randomPools(pools []kv.Pool) {
 	rand.Shuffle(len(pools), func(i, j int) {
 		pools[i], pools[j] = pools[j], pools[i]
 	})

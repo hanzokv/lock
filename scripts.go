@@ -1,8 +1,8 @@
 package redsync
 
-import "github.com/hanzokv/lock/v4/redis"
+import "github.com/hanzokv/lock/v4/kv"
 
-var deleteScript = redis.NewScript(1, `
+var deleteScript = kv.NewScript(1, `
 	local val = redis.call("GET", KEYS[1])
 	if val == ARGV[1] then
 		return redis.call("DEL", KEYS[1])
@@ -13,7 +13,7 @@ var deleteScript = redis.NewScript(1, `
 	end
 `, "e950836ed1e694540c503ef9972b8de518044d3b")
 
-var touchWithSetNXScript = redis.NewScript(1, `
+var touchWithSetNXScript = kv.NewScript(1, `
 	if redis.call("GET", KEYS[1]) == ARGV[1] then
 		return redis.call("PEXPIRE", KEYS[1], ARGV[2])
 	elseif redis.call("SET", KEYS[1], ARGV[1], "PX", ARGV[2], "NX") then
@@ -23,7 +23,7 @@ var touchWithSetNXScript = redis.NewScript(1, `
 	end
 `, "b6b55c439e02c6f52ffb8be7ec8c0d0ac816ea79")
 
-var touchScript = redis.NewScript(1, `
+var touchScript = kv.NewScript(1, `
 	if redis.call("GET", KEYS[1]) == ARGV[1] then
 		return redis.call("PEXPIRE", KEYS[1], ARGV[2])
 	else

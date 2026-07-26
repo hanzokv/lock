@@ -5,23 +5,23 @@ import (
 	"strings"
 	"time"
 
-	redsyncredis "github.com/hanzokv/lock/v4/redis"
-	"github.com/hanzokv/go/v9"
+	"github.com/go-redis/redis/v8"
+	redsynckv "github.com/hanzokv/lock/v4/kv"
 )
 
 type pool struct {
 	delegate redis.UniversalClient
 }
 
-func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
+func (p *pool) Get(ctx context.Context) (redsynckv.Conn, error) {
 	if ctx == nil {
-		ctx = context.Background()
+		ctx = p.delegate.Context()
 	}
 	return &conn{p.delegate, ctx}, nil
 }
 
 // NewPool returns a Goredis-based pool implementation.
-func NewPool(delegate redis.UniversalClient) redsyncredis.Pool {
+func NewPool(delegate redis.UniversalClient) redsynckv.Pool {
 	return &pool{delegate}
 }
 
@@ -48,7 +48,7 @@ func (c *conn) PTTL(name string) (time.Duration, error) {
 	return c.delegate.PTTL(c.ctx, name).Result()
 }
 
-func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error) {
+func (c *conn) Eval(script *redsynckv.Script, keysAndArgs ...any) (any, error) {
 	keys := make([]string, script.KeyCount)
 	args := keysAndArgs
 
@@ -66,7 +66,7 @@ func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error
 	return v, noErrNil(err)
 }
 
-func (c *conn) ScriptLoad(script *redsyncredis.Script) error {
+func (c *conn) ScriptLoad(script *redsynckv.Script) error {
 	v, err := c.delegate.ScriptLoad(c.ctx, script.Src).Result()
 	if err == nil {
 		script.Hash = v

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestRedisErrorIs(t *testing.T) {
+func TestKVErrorIs(t *testing.T) {
 	cases := map[string]error{
 		"defined_error":  ErrFailed,
 		"other_error":    errors.New("other error"),
@@ -16,7 +16,7 @@ func TestRedisErrorIs(t *testing.T) {
 	for k, v := range cases {
 
 		t.Run(k, func(t *testing.T) {
-			err := RedisError{
+			err := KVError{
 				Node: 0,
 				Err:  v,
 			}
@@ -28,7 +28,7 @@ func TestRedisErrorIs(t *testing.T) {
 	}
 }
 
-func TestRedisErrorAs(t *testing.T) {
+func TestKVErrorAs(t *testing.T) {
 	derr := dummyError{}
 
 	cases := map[string]error{
@@ -39,7 +39,7 @@ func TestRedisErrorAs(t *testing.T) {
 	for k, v := range cases {
 
 		t.Run(k, func(t *testing.T) {
-			err := RedisError{
+			err := KVError{
 				Node: 0,
 				Err:  v,
 			}

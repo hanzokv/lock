@@ -10,15 +10,15 @@ import (
 	goredislib "github.com/go-redis/redis"
 	goredislib_v7 "github.com/go-redis/redis/v7"
 	goredislib_v8 "github.com/go-redis/redis/v8"
-	"github.com/hanzokv/lock/v4/redis"
-	"github.com/hanzokv/lock/v4/redis/goredis"
-	goredis_v7 "github.com/hanzokv/lock/v4/redis/goredis/v7"
-	goredis_v8 "github.com/hanzokv/lock/v4/redis/goredis/v8"
-	goredis_v9 "github.com/hanzokv/lock/v4/redis/goredis/v9"
-	"github.com/hanzokv/lock/v4/redis/redigo"
-	rueidis "github.com/hanzokv/lock/v4/redis/rueidis"
 	redigolib "github.com/gomodule/redigo/redis"
-	goredislib_v9 "github.com/hanzokv/go/v9"
+	kvlib "github.com/hanzokv/go/v9"
+	"github.com/hanzokv/lock/v4/kv"
+	"github.com/hanzokv/lock/v4/kv/goredis"
+	goredis_v7 "github.com/hanzokv/lock/v4/kv/goredis/v7"
+	goredis_v8 "github.com/hanzokv/lock/v4/kv/goredis/v8"
+	"github.com/hanzokv/lock/v4/kv/kvgo"
+	"github.com/hanzokv/lock/v4/kv/redigo"
+	rueidis "github.com/hanzokv/lock/v4/kv/rueidis"
 	rueidislib "github.com/redis/rueidis"
 	"github.com/redis/rueidis/rueidiscompat"
 	"github.com/stvp/tempredis"
@@ -28,7 +28,7 @@ var servers []*tempredis.Server
 
 type testCase struct {
 	poolCount int
-	pools     []redis.Pool
+	pools     []kv.Pool
 }
 
 func makeCases(poolCount int) map[string]*testCase {
@@ -49,9 +49,9 @@ func makeCases(poolCount int) map[string]*testCase {
 			poolCount,
 			newMockPoolsGoredisV8(poolCount),
 		},
-		"goredis_v9": {
+		"kvgo": {
 			poolCount,
-			newMockPoolsGoredisV9(poolCount),
+			newMockPoolsKVGo(poolCount),
 		},
 		"rueidis": {
 			poolCount,
@@ -68,7 +68,7 @@ const (
 	GoredisBlock   = 1
 	GoredisV7Block = 2
 	GoredisV8Block = 3
-	GoredisV9Block = 4
+	KVGoBlock      = 4
 	RueidisBlock   = 5
 )
 
@@ -106,8 +106,8 @@ func TestRedsync(t *testing.T) {
 	}
 }
 
-func newMockPoolsRedigo(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsRedigo(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
 	offset := RedigoBlock * ServerPoolSize
 
@@ -128,8 +128,8 @@ func newMockPoolsRedigo(n int) []redis.Pool {
 	return pools
 }
 
-func newMockPoolsGoredis(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsGoredis(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
 	offset := GoredisBlock * ServerPoolSize
 
@@ -143,8 +143,8 @@ func newMockPoolsGoredis(n int) []redis.Pool {
 	return pools
 }
 
-func newMockPoolsGoredisV7(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsGoredisV7(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
 	offset := GoredisV7Block * ServerPoolSize
 
@@ -158,8 +158,8 @@ func newMockPoolsGoredisV7(n int) []redis.Pool {
 	return pools
 }
 
-func newMockPoolsGoredisV8(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsGoredisV8(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
 	offset := GoredisV8Block * ServerPoolSize
 
@@ -173,23 +173,23 @@ func newMockPoolsGoredisV8(n int) []redis.Pool {
 	return pools
 }
 
-func newMockPoolsGoredisV9(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsKVGo(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
-	offset := GoredisV9Block * ServerPoolSize
+	offset := KVGoBlock * ServerPoolSize
 
 	for i := range n {
-		client := goredislib_v9.NewClient(&goredislib_v9.Options{
+		client := kvlib.NewClient(&kvlib.Options{
 			Network: "unix",
 			Addr:    servers[i+offset].Socket(),
 		})
-		pools[i] = goredis_v9.NewPool(client)
+		pools[i] = kvgo.NewPool(client)
 	}
 	return pools
 }
 
-func newMockPoolsRueidis(n int) []redis.Pool {
-	pools := make([]redis.Pool, n)
+func newMockPoolsRueidis(n int) []kv.Pool {
+	pools := make([]kv.Pool, n)
 
 	offset := RueidisBlock * ServerPoolSize
 

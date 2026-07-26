@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	redsyncredis "github.com/hanzokv/lock/v4/redis"
 	"github.com/gomodule/redigo/redis"
+	redsynckv "github.com/hanzokv/lock/v4/kv"
 )
 
 type Pool interface {
@@ -18,7 +18,7 @@ type pool struct {
 	delegate Pool
 }
 
-func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
+func (p *pool) Get(ctx context.Context) (redsynckv.Conn, error) {
 	if ctx != nil {
 		c, err := p.delegate.GetContext(ctx)
 		if err != nil {
@@ -30,7 +30,7 @@ func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
 }
 
 // NewPool returns a Redigo-based pool implementation.
-func NewPool(delegate Pool) redsyncredis.Pool {
+func NewPool(delegate Pool) redsynckv.Pool {
 	return &pool{delegate}
 }
 
@@ -58,7 +58,7 @@ func (c *conn) PTTL(name string) (time.Duration, error) {
 	return time.Duration(expiry) * time.Millisecond, noErrNil(err)
 }
 
-func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error) {
+func (c *conn) Eval(script *redsynckv.Script, keysAndArgs ...any) (any, error) {
 	v, err := c.delegate.Do("EVALSHA", args(script, script.Hash, keysAndArgs)...)
 	if e, ok := err.(redis.Error); ok && strings.HasPrefix(string(e), "NOSCRIPT ") {
 		v, err = c.delegate.Do("EVAL", args(script, script.Src, keysAndArgs)...)
@@ -66,7 +66,7 @@ func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error
 	return v, noErrNil(err)
 }
 
-func (c *conn) ScriptLoad(script *redsyncredis.Script) error {
+func (c *conn) ScriptLoad(script *redsynckv.Script) error {
 	v, err := c.delegate.Do("SCRIPT", "LOAD", script.Src)
 	if err == nil {
 		script.Hash = v.(string)
@@ -86,7 +86,7 @@ func noErrNil(err error) error {
 	return nil
 }
 
-func args(script *redsyncredis.Script, spec string, keysAndArgs []any) []any {
+func args(script *redsynckv.Script, spec string, keysAndArgs []any) []any {
 	var args []any
 	if script.KeyCount < 0 {
 		args = make([]any, 1+len(keysAndArgs))

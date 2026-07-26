@@ -1,16 +1,16 @@
-package redis
+package kv
 
 import (
 	"context"
 	"time"
 )
 
-// Pool maintains a pool of Redis connections.
+// Pool maintains a pool of KV connections.
 type Pool interface {
 	Get(ctx context.Context) (Conn, error)
 }
 
-// Conn is a single Redis connection.
+// Conn is a single KV connection.
 type Conn interface {
 	Get(name string) (string, error)
 	Set(name string, value string) (bool, error)

@@ -35,16 +35,16 @@ func (err ErrNodeTaken) Error() string {
 	return fmt.Sprintf("node #%d: lock already taken", err.Node)
 }
 
-// A RedisError is an error communicating with one of the Redis nodes.
-type RedisError struct {
+// A KVError is an error communicating with one of the KV nodes.
+type KVError struct {
 	Node int
 	Err  error
 }
 
-func (e RedisError) Error() string {
+func (e KVError) Error() string {
 	return fmt.Sprintf("node #%d: %s", e.Node, e.Err)
 }
 
-func (e RedisError) Unwrap() error {
+func (e KVError) Unwrap() error {
 	return e.Err
 }

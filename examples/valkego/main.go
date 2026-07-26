@@ -6,7 +6,7 @@ import (
 	"net"
 
 	"github.com/hanzokv/lock/v4"
-	"github.com/hanzokv/lock/v4/redis/valkeygo"
+	"github.com/hanzokv/lock/v4/kv/valkeygo"
 	"github.com/stvp/tempredis"
 	valkeylib "github.com/valkey-io/valkey-go"
 	"github.com/valkey-io/valkey-go/valkeycompat"

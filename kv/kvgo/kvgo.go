@@ -1,32 +1,32 @@
-package goredis
+package kvgo
 
 import (
 	"context"
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
-	redsyncredis "github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/go/v9"
+	redsynckv "github.com/hanzokv/lock/v4/kv"
 )
 
 type pool struct {
-	delegate redis.UniversalClient
+	delegate kv.UniversalClient
 }
 
-func (p *pool) Get(ctx context.Context) (redsyncredis.Conn, error) {
+func (p *pool) Get(ctx context.Context) (redsynckv.Conn, error) {
 	if ctx == nil {
-		ctx = p.delegate.Context()
+		ctx = context.Background()
 	}
 	return &conn{p.delegate, ctx}, nil
 }
 
-// NewPool returns a Goredis-based pool implementation.
-func NewPool(delegate redis.UniversalClient) redsyncredis.Pool {
+// NewPool returns a hanzokv/go based pool implementation.
+func NewPool(delegate kv.UniversalClient) redsynckv.Pool {
 	return &pool{delegate}
 }
 
 type conn struct {
-	delegate redis.UniversalClient
+	delegate kv.UniversalClient
 	ctx      context.Context
 }
 
@@ -48,7 +48,7 @@ func (c *conn) PTTL(name string) (time.Duration, error) {
 	return c.delegate.PTTL(c.ctx, name).Result()
 }
 
-func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error) {
+func (c *conn) Eval(script *redsynckv.Script, keysAndArgs ...any) (any, error) {
 	keys := make([]string, script.KeyCount)
 	args := keysAndArgs
 
@@ -66,7 +66,7 @@ func (c *conn) Eval(script *redsyncredis.Script, keysAndArgs ...any) (any, error
 	return v, noErrNil(err)
 }
 
-func (c *conn) ScriptLoad(script *redsyncredis.Script) error {
+func (c *conn) ScriptLoad(script *redsynckv.Script) error {
 	v, err := c.delegate.ScriptLoad(c.ctx, script.Src).Result()
 	if err == nil {
 		script.Hash = v
@@ -80,7 +80,7 @@ func (c *conn) Close() error {
 }
 
 func noErrNil(err error) error {
-	if err == redis.Nil {
+	if err == kv.Nil {
 		return nil
 	}
 	return err
