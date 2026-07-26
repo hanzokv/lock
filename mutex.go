@@ -7,7 +7,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/go-redsync/redsync/v4/redis"
+	"github.com/hanzokv/lock/v4/redis"
 )
 
 // A DelayFunc is used to decide the amount of time to wait between retries.

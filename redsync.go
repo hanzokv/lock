@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/go-redsync/redsync/v4/redis"
+	"github.com/hanzokv/lock/v4/redis"
 )
 
 const (

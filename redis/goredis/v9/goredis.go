@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	redsyncredis "github.com/go-redsync/redsync/v4/redis"
-	"github.com/redis/go-redis/v9"
+	redsyncredis "github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/go/v9"
 )
 
 type pool struct {

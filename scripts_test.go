@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-redsync/redsync/v4/redis"
-	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
-	goredislib_v9 "github.com/redis/go-redis/v9"
+	"github.com/hanzokv/lock/v4/redis"
+	"github.com/hanzokv/lock/v4/redis/goredis/v9"
+	goredislib_v9 "github.com/hanzokv/go/v9"
 	"github.com/stvp/tempredis"
 )
 

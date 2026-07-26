@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-redsync/redsync/v4/redis"
+	"github.com/hanzokv/lock/v4/redis"
 	"golang.org/x/sync/errgroup"
 )
 

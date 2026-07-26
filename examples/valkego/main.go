@@ -5,8 +5,8 @@ import (
 	"crypto/tls"
 	"net"
 
-	"github.com/go-redsync/redsync/v4"
-	"github.com/go-redsync/redsync/v4/redis/valkeygo"
+	"github.com/hanzokv/lock/v4"
+	"github.com/hanzokv/lock/v4/redis/valkeygo"
 	"github.com/stvp/tempredis"
 	valkeylib "github.com/valkey-io/valkey-go"
 	"github.com/valkey-io/valkey-go/valkeycompat"

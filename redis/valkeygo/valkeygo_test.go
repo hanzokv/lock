@@ -1,6 +1,6 @@
 package valkeygo
 
-import "github.com/go-redsync/redsync/v4/redis"
+import "github.com/hanzokv/lock/v4/redis"
 
 var _ redis.Conn = (*conn)(nil)
 

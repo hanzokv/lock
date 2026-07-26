@@ -1,6 +1,6 @@
 package redsync
 
-import "github.com/go-redsync/redsync/v4/redis"
+import "github.com/hanzokv/lock/v4/redis"
 
 var deleteScript = redis.NewScript(1, `
 	local val = redis.call("GET", KEYS[1])
