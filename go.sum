@@ -10,8 +10,8 @@ github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/r
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/gomodule/redigo v1.9.3 h1:dNPSXeXv6HCq2jdyWfjgmhBdqnR6PRO3m/G05nvpPC8=
 github.com/gomodule/redigo v1.9.3/go.mod h1:KsU3hiK/Ay8U42qpaJk+kuNa3C+spxapWpM+ywhcgtw=
-github.com/hanzokv/go/v9 v9.22.0 h1:zD4fh0NLBuVa8njIrXUivJCijlratzS1Yf7Y/uD5T00=
-github.com/hanzokv/go/v9 v9.22.0/go.mod h1:GV+nw+jX60sIrJ7LBkmOQw2WASXzkMstt52blcwNw6w=
+github.com/hanzokv/go/v9 v9.22.1 h1:VmwNfiDdS5Bd4D4OPBXPT1GLYIXGKc+j7+no6lpDYvk=
+github.com/hanzokv/go/v9 v9.22.1/go.mod h1:GV+nw+jX60sIrJ7LBkmOQw2WASXzkMstt52blcwNw6w=
 github.com/hjr265/tempredis v0.0.0-20231015061547-ad8aa5a343a2 h1:3IPtBIkMrXTxPqNlTYKaeLQT8FteBIL4ZwuWMf6bcUg=
 github.com/hjr265/tempredis v0.0.0-20231015061547-ad8aa5a343a2/go.mod h1:XI9XLfrJNCQs1vEL3HtLol9YiQkGRjIoa065wm0DW90=
 github.com/klauspost/cpuid/v2 v2.0.9 h1:lgaqFMSdTdQYdZ04uHyN2d/eKdOMyi2YLSvlQIBFYa4=
