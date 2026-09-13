@@ -1,11 +1,11 @@
 module github.com/hanzokv/lock/v4
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/hanzokv/go/v9 v9.22.0
 	github.com/stvp/tempredis v0.0.0-20181119212430-b82af8480203
-	golang.org/x/sync v0.22.0
+	golang.org/x/sync v0.23.0
 )
 
 require (
