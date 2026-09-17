@@ -1,6 +1,6 @@
 module github.com/hanzokv/lock/v4
 
-go 1.26
+go 1.27.1
 
 require (
 	github.com/hanzokv/go/v9 v9.22.0
